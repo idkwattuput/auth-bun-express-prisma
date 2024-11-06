@@ -5,6 +5,9 @@ import cookieParser from "cookie-parser";
 import { logger } from "./middlewares/log";
 import { verifyJWT } from "./middlewares/jwt";
 import type { AuthRoute } from "./routes/auth-route";
+import { credentials } from "./middlewares/credentials";
+import { corsOptions } from "./config/cors-options";
+import { errorHandler } from "./middlewares/error";
 
 export class App {
   authRoute: AuthRoute;
@@ -16,14 +19,18 @@ export class App {
     this.setMiddlewares();
     this.setRoutes();
     this.handleInvalidRoutes();
+
+    // Make sure handleError is called last
+    this.handleError();
   }
 
   // Middlewares
   setMiddlewares() {
-    this.app.use(cors());
+    this.app.use(logger);
+    this.app.use(credentials);
+    this.app.use(cors(corsOptions));
     this.app.use(express.json());
     this.app.use(cookieParser());
-    this.app.use(logger);
   }
 
   // Routes
@@ -43,6 +50,10 @@ export class App {
     this.app.use((_, res) => {
       res.status(404).json({ message: "Route not found" });
     });
+  }
+
+  handleError() {
+    this.app.use(errorHandler);
   }
 
   // Start the server

@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import type { UserRepository } from "../repositories/user-repository";
@@ -10,7 +10,7 @@ export class AuthController {
     this.userRepository = userRepository;
   }
 
-  async register(req: Request, res: Response) {
+  async register(req: Request, res: Response, next: NextFunction) {
     try {
       const { firstName, lastName, email, password } = req.body;
 
@@ -57,17 +57,17 @@ export class AuthController {
       res.cookie("refresh_token", refreshToken, {
         httpOnly: true,
         sameSite: "none",
+        secure: true,
         maxAge: 24 * 60 * 60 * 1000, // maxAge: 1day
       });
 
       return res.json({ accessToken: accessToken });
     } catch (error) {
-      console.error(error);
-      return res.status(500).json(error);
+      next(error);
     }
   }
 
-  async login(req: Request, res: Response) {
+  async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, password } = req.body;
 
@@ -116,17 +116,17 @@ export class AuthController {
       res.cookie("refresh_token", refreshToken, {
         httpOnly: true,
         sameSite: "none",
+        secure: true,
         maxAge: 24 * 60 * 60 * 1000, // maxAge: 1day
       });
 
       return res.json({ accessToken: accessToken });
     } catch (error) {
-      console.error(error);
-      return res.status(500).json(error);
+      next(error);
     }
   }
 
-  async refresh(req: Request, res: Response) {
+  async refresh(req: Request, res: Response, next: NextFunction) {
     try {
       const cookies: { refresh_token?: string } = req.cookies;
 
@@ -156,12 +156,11 @@ export class AuthController {
         return res.json({ accessToken: accessToken });
       });
     } catch (error) {
-      console.error(error);
-      return res.status(500).json(error);
+      next(error);
     }
   }
 
-  async logout(req: Request, res: Response) {
+  async logout(req: Request, res: Response, next: NextFunction) {
     try {
       const cookies: { refresh_token?: string } = req.cookies;
 
@@ -193,8 +192,7 @@ export class AuthController {
 
       res.sendStatus(204);
     } catch (error) {
-      console.error(error);
-      return res.status(500).json(error);
+      next(error);
     }
   }
 }
