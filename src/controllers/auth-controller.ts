@@ -1,9 +1,9 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import userRepository from "../repositories/user-repository";
 
-async function register(req: Request, res: Response) {
+async function register(req: Request, res: Response, next: NextFunction) {
   try {
     const { firstName, lastName, email, password } = req.body;
 
@@ -50,17 +50,17 @@ async function register(req: Request, res: Response) {
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
       sameSite: "none",
+      secure: true,
       maxAge: 24 * 60 * 60 * 1000, // maxAge: 1day
     });
 
     return res.json({ accessToken: accessToken });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json(error);
+    next(error);
   }
 }
 
-async function login(req: Request, res: Response) {
+async function login(req: Request, res: Response, next: NextFunction) {
   try {
     const { email, password } = req.body;
 
@@ -106,17 +106,17 @@ async function login(req: Request, res: Response) {
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
       sameSite: "none",
+      secure: true,
       maxAge: 24 * 60 * 60 * 1000, // maxAge: 1day
     });
 
     return res.json({ accessToken: accessToken });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json(error);
+    next(error);
   }
 }
 
-async function refresh(req: Request, res: Response) {
+async function refresh(req: Request, res: Response, next: NextFunction) {
   try {
     const cookies: { refresh_token?: string } = req.cookies;
 
@@ -146,12 +146,11 @@ async function refresh(req: Request, res: Response) {
       return res.json({ accessToken: accessToken });
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json(error);
+    next(error);
   }
 }
 
-async function logout(req: Request, res: Response) {
+async function logout(req: Request, res: Response, next: NextFunction) {
   try {
     const cookies: { refresh_token?: string } = req.cookies;
 
@@ -180,8 +179,7 @@ async function logout(req: Request, res: Response) {
 
     res.sendStatus(204);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json(error);
+    next(error);
   }
 }
 

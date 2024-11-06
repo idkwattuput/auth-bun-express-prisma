@@ -4,14 +4,18 @@ import cookieParser from "cookie-parser";
 import { logger } from "./middlewares/log";
 import { verifyJWT } from "./middlewares/jwt";
 import router from "./routes/auth-route";
+import { credentials } from "./middlewares/credentials";
+import { corsOptions } from "./config/cors-options";
+import { errorHandler } from "./middlewares/error";
 
 const app = express();
 const PORT = Bun.env.PORT;
 
 // Middlewares
-app.use(cors());
-app.use(express.json());
 app.use(logger);
+app.use(credentials);
+app.use(cors(corsOptions));
+app.use(express.json());
 app.use(cookieParser());
 
 // Routes that dont need verify JWT
@@ -32,6 +36,9 @@ app.use(verifyJWT);
 app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });
 });
+
+// Make sure errorHandler is called last
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server has started on ${PORT}`);
