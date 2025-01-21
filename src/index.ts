@@ -3,7 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { logger } from "./middlewares/log";
 import { verifyJWT } from "./middlewares/jwt";
-import router from "./routes/auth-route";
+import authRouter from "./routes/auth-route";
 import { credentials } from "./middlewares/credentials";
 import { corsOptions } from "./config/cors-options";
 import { errorHandler } from "./middlewares/error";
@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Routes that dont need verify JWT
-app.use("/api/v1/auth", router);
+app.use("/api/v1/auth", authRouter);
 
 app.use(verifyJWT);
 
