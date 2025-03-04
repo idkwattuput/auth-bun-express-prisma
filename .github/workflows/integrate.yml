@@ -1,0 +1,54 @@
+name: Backend Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test_ci:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+
+      - name: Install backend dependencies
+        run: |
+          bun install
+
+      - name: Setup db
+        env:
+          DATABASE_URL: postgres://testuser:testpassword@localhost:5432/testdb
+        run: |
+          bunx prisma generate
+          bunx prisma migrate dev --name ci
+
+      - name: Run test at backend
+        env:
+          PORT: 8000
+          DATABASE_URL: postgres://testuser:testpassword@localhost:5432/testdb
+          ACCESS_TOKEN_SECRET: rahsiahehe
+          ACCESS_TOKEN_EXPIRES: 20s
+          REFRESH_TOKEN_SECRET: secrethaha
+          REFRESH_TOKEN_EXPIRES: 1w
+        run: |
+          bun test
