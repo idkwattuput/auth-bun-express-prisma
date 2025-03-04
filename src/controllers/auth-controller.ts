@@ -76,7 +76,7 @@ async function login(req: Request, res: Response, next: NextFunction) {
     const isEmailExist = await userRepository.findByEmail(email);
     if (!isEmailExist) {
       return res
-        .status(400)
+        .status(401)
         .json({ message: "Email or password is incorrect" });
     }
 
@@ -86,7 +86,7 @@ async function login(req: Request, res: Response, next: NextFunction) {
     );
     if (!isPasswordMatch) {
       return res
-        .status(400)
+        .status(401)
         .json({ message: "Email or password is incorrect" });
     }
 

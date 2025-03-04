@@ -8,7 +8,7 @@ import { credentials } from "./middlewares/credentials";
 import { corsOptions } from "./config/cors-options";
 import { errorHandler } from "./middlewares/error";
 
-const app = express();
+export const app = express();
 const PORT = Bun.env.PORT;
 
 // Middlewares
